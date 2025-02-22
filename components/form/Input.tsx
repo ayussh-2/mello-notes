@@ -1,23 +1,26 @@
 import { Text, TextInput, View } from 'react-native';
-import { Controller } from 'react-hook-form';
+import { Control, Controller, FieldValues, RegisterOptions, Path } from 'react-hook-form';
 
-interface FormInputProps {
-  control: any;
-  name: string;
+interface FormInputProps<T extends FieldValues> {
+  control: Control<T>;
+  name: Path<T>;
   label: string;
-  rules?: any;
+  rules?: Omit<
+    RegisterOptions<T, Path<T>>,
+    'setValueAs' | 'disabled' | 'valueAsNumber' | 'valueAsDate'
+  >;
   placeholder: string;
   secureTextEntry?: boolean;
 }
 
-export const Input = ({
+export const Input = <T extends FieldValues>({
   control,
   name,
   label,
   rules = {},
   placeholder,
   secureTextEntry,
-}: FormInputProps) => {
+}: FormInputProps<T>) => {
   return (
     <Controller
       control={control}
@@ -36,7 +39,9 @@ export const Input = ({
             secureTextEntry={secureTextEntry}
             placeholderTextColor="#9CA3AF"
           />
-          {error && <Text className="mt-1 text-sm text-red-500">{error.message}</Text>}
+          {error && (
+            <Text className="font-nunito-regular mt-1 text-sm text-red-500">{error.message}</Text>
+          )}
         </View>
       )}
     />

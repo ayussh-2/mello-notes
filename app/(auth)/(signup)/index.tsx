@@ -1,17 +1,26 @@
-import { Container } from '~/components/Container';
+import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { useForm } from 'react-hook-form';
+import { Link, router } from 'expo-router';
+import { Container } from '~/components/Container';
 import { Input } from '~/components/form/Input';
 import { Button } from '~/components/ui/Button';
 import { FormContainer } from '~/components/form/FormContainer';
-import { Link } from 'expo-router';
+import { signUp } from '~/utils/auth';
+import { userStorage } from '~/utils/userStorage';
+
+type SignUpData = {
+  fullName: string;
+  email: string;
+  password: string;
+};
 
 export default function SignUp() {
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm({
+  } = useForm<SignUpData>({
     defaultValues: {
       fullName: '',
       email: '',
@@ -19,10 +28,37 @@ export default function SignUp() {
     },
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = async (data: SignUpData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await signUp(data);
+      if (result && result.user) {
+        const { user } = result;
+        await userStorage.saveUser({
+          email: user.email!,
+          fullName: user.user_metadata.fullName,
+          id: user.id,
+        });
+        router.navigate('/home/index');
+      } else {
+        throw new Error('Sign up failed');
+      }
+    } catch (error) {
+      console.error('Sign up error:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred during sign up');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Container>
       <FormContainer>
-        <View className="w-full flex-1 items-center ">
+        <View className="w-full flex-1 items-center">
           <Text className="text-text-primary font-titan mt-20 text-center text-4xl">
             Mello Notes
           </Text>
@@ -34,6 +70,8 @@ export default function SignUp() {
           <Text className="text-text-secondary font-nunito-bold mb-10 mt-5 w-96 text-center">
             Join Mello Notes for free. Create and share unlimited notes with your friends.
           </Text>
+
+          {error && <Text className="mb-4 text-center text-red-500">{error}</Text>}
 
           <Input
             control={control}
@@ -54,9 +92,9 @@ export default function SignUp() {
             label="Email"
             rules={{
               required: 'Email is required',
-              minLength: {
-                value: 2,
-                message: 'Name must be at least 2 characters',
+              pattern: {
+                value: /^\S+@\S+\.\S+$/,
+                message: 'Enter a valid email',
               },
             }}
             placeholder="ayush@email.com"
@@ -72,15 +110,18 @@ export default function SignUp() {
                 message: 'Password must be at least 5 characters',
               },
             }}
-            placeholder="#######"
+            placeholder="********"
+            secureTextEntry
           />
 
           <View className="mt-10 w-full flex-1 gap-5">
-            <Button onPress={() => handleSubmit}>Create Account</Button>
-            <Button onPress={() => handleSubmit}>Continue With Google</Button>
+            <Button onPress={handleSubmit(onSubmit)} isLoading={loading}>
+              Create Account
+            </Button>
+            <Button>Continue With Google</Button>
 
             <Button variant="link">
-              <Link href={'/login'}>Already have an account?</Link>
+              <Link href="/login">Already have an account?</Link>
             </Button>
           </View>
         </View>
