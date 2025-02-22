@@ -1,12 +1,12 @@
 import { Container } from '~/components/Container';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { Input } from '~/components/form/Input';
 import { Button } from '~/components/ui/Button';
 import { FormContainer } from '~/components/form/FormContainer';
 import { Link } from 'expo-router';
 
-export default function Auth() {
+export default function Login() {
   const {
     control,
     handleSubmit,
