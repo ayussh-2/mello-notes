@@ -118,7 +118,7 @@ export default function SignUp() {
             <Button onPress={handleSubmit(onSubmit)} isLoading={loading}>
               Create Account
             </Button>
-            <Button>Continue With Google</Button>
+            {/* <Button>Continue With Google</Button> */}
 
             <Button variant="link">
               <Link href="/login">Already have an account?</Link>

@@ -33,9 +33,7 @@ export default function Login() {
     setLoading(true);
     setError(null);
     try {
-      console.log(data);
       const result = await signIn(data.email, data.password);
-      console.log(result);
       if (result && result.user) {
         const { user } = result;
         await userStorage.saveUser({
@@ -104,9 +102,9 @@ export default function Login() {
             <Button onPress={handleSubmit(onSubmit)} isLoading={loading}>
               Login
             </Button>
-            <Button onPress={() => handleSubmit}>Continue With Google</Button>
+            {/* <Button onPress={() => handleSubmit}>Continue With Google</Button> */}
             <Button variant="link">
-              <Link href="/">Dont have an account? Sign up</Link>
+              <Link href="/signup">Dont have an account? Sign up</Link>
             </Button>
           </View>
         </View>
