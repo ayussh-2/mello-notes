@@ -6,6 +6,8 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
+import { StatusBar } from 'react-native';
+
 SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
@@ -26,10 +28,13 @@ export default function Layout() {
     return null;
   }
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
+    <>
+      <StatusBar backgroundColor="#f8eee2" barStyle="dark-content" translucent={true} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
+    </>
   );
 }

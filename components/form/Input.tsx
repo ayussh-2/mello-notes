@@ -27,8 +27,8 @@ export const Input = ({
         <View className="mb-4 w-full">
           <Text className="text-text-secondary font-nunito-regular mb-2">{label}</Text>
           <TextInput
-            className={`font-nunito-regular text-text-primary focus:ring-primary-500 w-full rounded-xl bg-white px-4 py-4
-                text-xl transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50
+            className={`font-nunito-regular text-text-primary w-full rounded-xl bg-white px-4 py-5
+                text-xl
               ${error ? 'border-2 border-red-500' : 'border border-gray-200'}`}
             onChangeText={onChange}
             value={value}

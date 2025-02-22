@@ -33,7 +33,7 @@ export function Button({
     primary: 'bg-primary-500 active:bg-primary-600 w-full',
     secondary: 'bg-secondary-300 active:bg-secondary-400 w-full',
     outline: 'border-2 border-primary-500 bg-transparent active:bg-primary-50 w-full',
-    link: 'text-primary-500 w-full',
+    link: 'w-full',
   };
 
   const sizes = {
@@ -46,6 +46,7 @@ export function Button({
     primary: 'text-white',
     secondary: 'text-text-primary',
     outline: 'text-primary-500',
+    link: 'text-primary-500',
   };
 
   const buttonStyles = cn(
