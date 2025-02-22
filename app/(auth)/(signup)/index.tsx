@@ -43,7 +43,7 @@ export default function SignUp() {
           fullName: user.user_metadata.fullName,
           id: user.id,
         });
-        router.navigate('/home/index');
+        router.navigate('/home');
       } else {
         throw new Error('Sign up failed');
       }
@@ -59,15 +59,15 @@ export default function SignUp() {
     <Container>
       <FormContainer>
         <View className="w-full flex-1 items-center">
-          <Text className="text-text-primary font-titan mt-20 text-center text-4xl">
+          <Text className="mt-20 text-center font-titan text-4xl text-text-primary">
             Mello Notes
           </Text>
 
-          <Text className="text-text-primary font-nunito-extra-bold mt-20 text-3xl">
+          <Text className="mt-20 font-nunito-extra-bold text-3xl text-text-primary">
             Create a free account
           </Text>
 
-          <Text className="text-text-secondary font-nunito-bold mb-10 mt-5 w-96 text-center">
+          <Text className="mb-10 mt-5 w-96 text-center font-nunito-bold text-text-secondary">
             Join Mello Notes for free. Create and share unlimited notes with your friends.
           </Text>
 

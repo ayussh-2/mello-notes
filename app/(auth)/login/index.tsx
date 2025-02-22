@@ -4,7 +4,15 @@ import { useForm } from 'react-hook-form';
 import { Input } from '~/components/form/Input';
 import { Button } from '~/components/ui/Button';
 import { FormContainer } from '~/components/form/FormContainer';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
+import { useState } from 'react';
+import { signIn } from '~/utils/auth';
+import { userStorage } from '~/utils/userStorage';
+
+type LoginData = {
+  email: string;
+  password: string;
+};
 
 export default function Login() {
   const {
@@ -18,21 +26,52 @@ export default function Login() {
     },
   });
 
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const onSubmit = async (data: LoginData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log(data);
+      const result = await signIn(data.email, data.password);
+      console.log(result);
+      if (result && result.user) {
+        const { user } = result;
+        await userStorage.saveUser({
+          email: user.email!,
+          fullName: user.user_metadata.fullName,
+          id: user.id,
+        });
+        router.navigate('/home');
+      } else {
+        throw new Error('Login failed');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred during login');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Container>
       <FormContainer>
         <View className="w-full flex-1 items-center ">
-          <Text className="text-text-primary font-titan mt-20 text-center text-4xl">
+          <Text className="mt-20 text-center font-titan text-4xl text-text-primary">
             Mello Notes
           </Text>
 
-          <Text className="text-text-primary font-nunito-extra-bold mt-20 text-3xl">
+          <Text className="mt-20 font-nunito-extra-bold text-3xl text-text-primary">
             Login to your account
           </Text>
 
-          <Text className="text-text-secondary font-nunito-bold mb-10 mt-5 w-96 text-center">
+          <Text className="mb-10 mt-5 w-96 text-center font-nunito-bold text-text-secondary">
             Get access to your notes and create new ones.
           </Text>
+
+          {error && <Text className="mb-4 text-center text-red-500">{error}</Text>}
 
           <Input
             control={control}
@@ -62,7 +101,9 @@ export default function Login() {
           />
 
           <View className="mt-10 w-full flex-1 gap-5">
-            <Button onPress={() => handleSubmit}>Create Account</Button>
+            <Button onPress={handleSubmit(onSubmit)} isLoading={loading}>
+              Login
+            </Button>
             <Button onPress={() => handleSubmit}>Continue With Google</Button>
             <Button variant="link">
               <Link href="/">Dont have an account? Sign up</Link>
