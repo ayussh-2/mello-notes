@@ -1,9 +1,8 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { StatusBar } from 'expo-status-bar';
 import { Container } from '~/components/Container';
 import Navbar from '~/components/layout/Navbar';
+import CreateButton from '~/components/home/CreateButton';
 
 interface Note {
   id: string;
@@ -124,6 +123,7 @@ export default function NotesScreen() {
           ))}
         </View>
       </ScrollView>
+      <CreateButton />
     </Container>
   );
 }
