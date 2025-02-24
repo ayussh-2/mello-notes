@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
 // @ts-ignore - no type definitions available
-import Icon from 'react-native-vector-icons/Feather';
+import Icon from 'react-native-vector-icons/Octicons';
 
 interface FormattingButtonsProps {
   showFormatting: boolean;
@@ -15,7 +15,7 @@ export default function FormattingButtons({
   executeCommand,
 }: FormattingButtonsProps) {
   return showFormatting ? (
-    <View className="mb-2.5 w-44 flex-row flex-wrap justify-between rounded-xl bg-white p-2 shadow-md">
+    <View className="mb-2.5 w-auto rounded-xl bg-[#FFFDFA] p-2">
       <TouchableOpacity
         className="m-1 h-12 w-12 items-center justify-center rounded-lg bg-gray-100"
         onPress={() => executeCommand('bold')}>
@@ -31,26 +31,26 @@ export default function FormattingButtons({
       <TouchableOpacity
         className="m-1 h-12 w-12 items-center justify-center rounded-lg bg-gray-100"
         onPress={() => executeCommand('insertUnorderedList')}>
-        <Icon name="list" size={20} color="#333" />
+        <Icon name="list-unordered" size={20} color="#333" />
       </TouchableOpacity>
 
       <TouchableOpacity
         className="m-1 h-12 w-12 items-center justify-center rounded-lg bg-gray-100"
         onPress={() => executeCommand('insertOrderedList')}>
-        <Icon name="list" size={20} color="#333" />
+        <Icon name="list-ordered" size={20} color="#333" />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        className="m-1 h-12 w-full items-center justify-center rounded-lg"
-        onPress={() => setShowFormatting(false)}>
-        <Icon name="x" size={20} color="#f44336" />
-      </TouchableOpacity>
+      <View className="h-0 flex-1 items-center justify-center">
+        <TouchableOpacity className=" rounded-lg" onPress={() => setShowFormatting(false)}>
+          <Icon name="x" size={20} color="#f44336" />
+        </TouchableOpacity>
+      </View>
     </View>
   ) : (
     <TouchableOpacity
-      className="h-14 w-14 items-center justify-center rounded-full bg-blue-500 shadow-md"
+      className="h-14 w-14 items-center justify-center rounded-full bg-primary-500 shadow-md"
       onPress={() => setShowFormatting(true)}>
-      <Icon name="plus" size={24} color="#fff" />
+      <Icon name="pencil" size={24} color="#fff" />
     </TouchableOpacity>
   );
 }
