@@ -13,6 +13,7 @@ import FormattingButtons from '~/components/create-notes/FormattingButtons';
 import Navbar from '~/components/layout/Navbar';
 import GeminiButton from '~/components/create-notes/GeminiButton';
 import { getEditorHTML } from '~/constants';
+import { addNote } from '~/utils/crud';
 
 const CreateNote = () => {
   const [title, setTitle] = useState<string>('Start with a catchy title...');
@@ -44,8 +45,12 @@ const CreateNote = () => {
       if (data.type === 'fontsLoaded') {
         setIsLoading(false);
       } else if (data.type === 'save') {
-        console.log('Saving note:', { title, content: data.content });
-
+        await addNote({
+          title,
+          content: data.content,
+          user_id: '1',
+          is_deleted: false,
+        });
         setIsSaving(false);
       }
     } catch (error) {
