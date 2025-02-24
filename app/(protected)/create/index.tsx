@@ -2,112 +2,24 @@ import React, { useState, useRef } from 'react';
 import {
   View,
   TextInput,
-  TouchableOpacity,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   NativeSyntheticEvent,
-  MessageEvent,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
-import Icon from 'react-native-vector-icons/Feather';
 import { Container } from '~/components/Container';
 import FormattingButtons from '~/components/create-notes/FormattingButtons';
 import Navbar from '~/components/layout/Navbar';
 import GeminiButton from '~/components/create-notes/GeminiButton';
+import { getEditorHTML } from '~/constants';
 
-interface WebViewMessage {
-  type: 'content' | 'save';
-  content: string;
-  title?: string;
-}
-
-interface MobileNoteEditorProps {
-  initialTitle?: string;
-  initialContent?: string;
-  onSave?: (title: string, content: string) => Promise<void>;
-}
-
-const MobileNoteEditor: React.FC<MobileNoteEditorProps> = ({
-  initialTitle = 'Start with a catchy title...',
-  initialContent = '',
-  onSave,
-}) => {
-  const [title, setTitle] = useState<string>(initialTitle);
+const CreateNote = () => {
+  const [title, setTitle] = useState<string>('Start with a catchy title...');
   const [showFormatting, setShowFormatting] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const webViewRef = useRef<WebView | null>(null);
-
-  const getEditorHTML = (): string => {
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-        <!-- Import Google Fonts -->
-        <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <style>
-          body {
-            font-family: 'Nunito', 'Segoe UI', sans-serif;
-            font-weight: 700;
-            padding: 16px 16px 0px 16px;
-            margin: 0;
-            font-size: 17.5px;
-            color: #333;
-            height: 100%;
-            line-height: 1.5;
-            background-color: #F8EEE2;
-          }
-          
-          #editor {
-            min-height: 100%;
-            outline: none;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            font-family: 'Nunito', 'Segoe UI', sans-serif;
-          }
-
-          #editor:empty:before {
-            content: "What are you thinking?";
-            color: #9ca3af;
-            font-family: 'Nunito', 'Segoe UI', sans-serif;
-            font-weight: 700;
-          }
-
-          ul {
-            padding-left: 24px;
-          }
-
-          ol {
-            padding-left: 24px;
-          }
-        </style>
-      </head>
-      <body>
-        <div id="editor" contenteditable="true">${initialContent}</div>
-        <script>
-          document.getElementById('editor').addEventListener('input', function() {
-            window.ReactNativeWebView.postMessage(
-              JSON.stringify({ type: 'content', content: this.innerHTML })
-            );
-          });
-
-          // Check if Google Fonts loaded successfully
-          document.fonts.ready.then(function() {
-            window.ReactNativeWebView.postMessage(
-              JSON.stringify({ type: 'fontsLoaded', success: true })
-            );
-          }).catch(function() {
-            window.ReactNativeWebView.postMessage(
-              JSON.stringify({ type: 'fontsLoaded', success: false })
-            );
-          });
-        </script>
-      </body>
-      </html>
-    `;
-  };
 
   const executeCommand = (command: string): void => {
     const script = `document.execCommand('${command}', false, null); true;`;
@@ -125,7 +37,7 @@ const MobileNoteEditor: React.FC<MobileNoteEditorProps> = ({
     `);
   };
 
-  const handleMessage = async (event: NativeSyntheticEvent<MessageEvent>): Promise<void> => {
+  const handleMessage = async (event: NativeSyntheticEvent<any>): Promise<void> => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
 
@@ -133,14 +45,6 @@ const MobileNoteEditor: React.FC<MobileNoteEditorProps> = ({
         setIsLoading(false);
       } else if (data.type === 'save') {
         console.log('Saving note:', { title, content: data.content });
-
-        if (onSave) {
-          await onSave(title, data.content);
-        }
-
-        if (!onSave) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
 
         setIsSaving(false);
       }
@@ -180,7 +84,7 @@ const MobileNoteEditor: React.FC<MobileNoteEditorProps> = ({
         ) : (
           <WebView
             ref={webViewRef}
-            source={{ html: getEditorHTML() }}
+            source={{ html: getEditorHTML('Write Something Amazing...') }}
             className="flex-1 font-nunito-regular text-lg"
             onMessage={handleMessage}
             onLoad={handleWebViewLoad}
@@ -201,7 +105,6 @@ const MobileNoteEditor: React.FC<MobileNoteEditorProps> = ({
             executeCommand={executeCommand}
             setShowFormatting={setShowFormatting}
             showFormatting={showFormatting}
-            disabled={isLoading}
           />
         </View>
       </KeyboardAvoidingView>
@@ -209,4 +112,4 @@ const MobileNoteEditor: React.FC<MobileNoteEditorProps> = ({
   );
 };
 
-export default MobileNoteEditor;
+export default CreateNote;
