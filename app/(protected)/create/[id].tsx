@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -14,28 +14,47 @@ import FormattingButtons from '~/components/create-notes/FormattingButtons';
 import Navbar from '~/components/layout/Navbar';
 import GeminiButton from '~/components/create-notes/GeminiButton';
 import { getEditorHTML } from '~/constants';
-import { addNote, findNoteById, updateNote } from '~/utils/crud';
 import { useLocalSearchParams } from 'expo-router';
-import { userStorage } from '~/utils/userStorage';
+import { useNotesStore } from '~/store/notesStore';
 
 const CreateNote = () => {
   const { id } = useLocalSearchParams();
-  const [title, setTitle] = useState<string>('Start with a catchy title...');
-  const [content, setContent] = useState<string>('Write Something Amazing...');
-  const [showFormatting, setShowFormatting] = useState<boolean>(false);
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [contentChanged, setContentChanged] = useState<boolean>(false);
+  const noteId = Array.isArray(id) ? id[0] : id;
+
+  const {
+    currentNote,
+    isLoading,
+    isSaving,
+    lastSaved,
+    contentChanged,
+    getNoteById,
+    createNote,
+    updateNote,
+    setContentChanged,
+    setIsSaving,
+  } = useNotesStore();
+
   const webViewRef = useRef<WebView | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const [existingNoteId, setExistingNoteId] = useState<string | null>(null);
-
   const AUTO_SAVE_INTERVAL = 30000;
+
+  const title = currentNote?.title || 'Start with a catchy title...';
+  const content = currentNote?.content || 'Write Something Amazing...';
+
+  const [showFormatting, setShowFormatting] = React.useState<boolean>(false);
 
   const executeCommand = (command: string): void => {
     const script = `document.execCommand('${command}', false, null); true;`;
     webViewRef.current?.injectJavaScript(script);
+  };
+
+  const handleTitleChange = (newTitle: string) => {
+    if (currentNote) {
+      useNotesStore.setState({
+        currentNote: { ...currentNote, title: newTitle },
+        contentChanged: true,
+      });
+    }
   };
 
   const handleSave = async (autoSave: boolean = false): Promise<void> => {
@@ -71,35 +90,31 @@ const CreateNote = () => {
       data = JSON.parse(event.nativeEvent.data);
 
       if (data.type === 'fontsLoaded') {
-        setIsLoading(false);
         setupContentChangeDetection();
       } else if (data.type === 'contentChanged') {
         setContentChanged(true);
       } else if (data.type === 'save') {
-        if (existingNoteId === 'new') {
-          const user = await userStorage.getUser();
-          const savedData = await addNote({
-            title,
-            content: data.content,
-            user_id: user?.id || 'anonymous',
-          });
-          if (savedData && savedData.length > 0) setExistingNoteId(savedData[0].id);
-        } else {
-          await updateNote(existingNoteId!, {
-            title,
+        if (noteId === 'new') {
+          if (currentNote) {
+            await createNote({
+              title: currentNote.title,
+              content: data.content,
+              user_id: currentNote.user_id || 'anonymous',
+            });
+          }
+        } else if (noteId && currentNote) {
+          await updateNote(noteId, {
+            title: currentNote.title,
             content: data.content,
           });
         }
-
-        setLastSaved(new Date());
-        setContentChanged(false);
 
         if (!data.autoSave) {
           setIsSaving(false);
         }
       }
     } catch (error) {
-      console.error('Error parsing message from WebView:', error);
+      console.error('Error processing WebView message:', error);
       if (!data?.autoSave) {
         setIsSaving(false);
       }
@@ -108,30 +123,13 @@ const CreateNote = () => {
 
   const handleWebViewLoad = () => {
     setTimeout(() => {
-      setIsLoading(false);
       setupContentChangeDetection();
     }, 500);
   };
 
-  const handleTitleChange = (newTitle: string) => {
-    setTitle(newTitle);
-    setContentChanged(true);
-  };
-
-  const findNote = async () => {
-    const noteId = Array.isArray(id) ? id[0] : id;
-    setExistingNoteId(noteId);
-    if (!noteId || noteId === 'new') return;
-    setIsLoading(true);
-    const note = await findNoteById(noteId);
-    if (note) {
-      setTitle(note.title);
-      setContent(note.content);
-      console.log('note', note);
-      setLastSaved(new Date(note.updated_at || note.created_at));
-    }
-    setIsLoading(false);
-  };
+  useEffect(() => {
+    getNoteById(noteId || 'new');
+  }, [noteId, getNoteById]);
 
   useEffect(() => {
     autoSaveTimerRef.current = setInterval(() => {
@@ -155,10 +153,6 @@ const CreateNote = () => {
       return () => clearTimeout(debounceTimer);
     }
   }, [title, contentChanged]);
-
-  useEffect(() => {
-    findNote();
-  }, []);
 
   return (
     <Container>
@@ -190,7 +184,6 @@ const CreateNote = () => {
             />
           )}
         </View>
-
         {isLoading ? (
           <View className="flex-1 items-center justify-center bg-[#F8EEE2]">
             <ActivityIndicator size="large" color="#4B5563" />
@@ -210,10 +203,8 @@ const CreateNote = () => {
             keyboardDisplayRequiresUserAction={false}
           />
         )}
-
         <View className="absolute bottom-5 right-5 items-end">
           <GeminiButton isLoading={isSaving} handleAutoComplete={handleSave} />
-
           <FormattingButtons
             executeCommand={executeCommand}
             setShowFormatting={setShowFormatting}

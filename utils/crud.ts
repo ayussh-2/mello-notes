@@ -3,7 +3,10 @@ import { handleAsync } from '../utils/asyncHandler';
 import { NoteType } from '~/types';
 export const fetchNotes = () =>
   handleAsync(async () => {
-    const { data, error } = await supabase.from('notes').select('*');
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .order('created_at', { ascending: false });
     if (error) console.error(error);
     return data;
   });
