@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
 import { systemInstruction } from '~/constants';
+import { userStorage } from '~/utils/userStorage';
 
 export function useGeminiAI() {
   const [isLoading, setIsLoading] = useState(false);
@@ -54,7 +55,12 @@ export function useGeminiAI() {
     setDisplayedResponse('');
 
     try {
-      const geminiKey = process.env.EXPO_PUBLIC_GEMINI_KEY || '';
+      const geminiKey = await userStorage.getGeminiKey();
+      if (!geminiKey) {
+        setError('Please enter a valid Gemini API key in the settings');
+        setIsLoading(false);
+        return null;
+      }
       const genAI = new GoogleGenerativeAI(geminiKey);
 
       const generationConfig = {

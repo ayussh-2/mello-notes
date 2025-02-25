@@ -4,6 +4,7 @@ interface UserDetails {
   id: string;
   email: string;
   fullName: string;
+  geminiKey?: string;
 }
 
 const USER_STORAGE_KEY = '@user_details';
@@ -44,6 +45,29 @@ export const userStorage = {
       return user !== null;
     } catch (error) {
       console.error('Error checking user existence:', error);
+      throw error;
+    }
+  },
+
+  updateGeminiKey: async (geminiKey: string): Promise<void> => {
+    try {
+      const user = await userStorage.getUser();
+      if (user) {
+        user.geminiKey = geminiKey;
+        await userStorage.saveUser(user);
+      }
+    } catch (error) {
+      console.error('Error updating Gemini key:', error);
+      throw error;
+    }
+  },
+
+  getGeminiKey: async (): Promise<string | null> => {
+    try {
+      const user = await userStorage.getUser();
+      return user?.geminiKey || null;
+    } catch (error) {
+      console.error('Error getting Gemini key:', error);
       throw error;
     }
   },

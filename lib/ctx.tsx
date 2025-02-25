@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { userStorage } from '~/utils/userStorage';
 
@@ -5,6 +6,7 @@ interface User {
   id: string;
   email: string;
   fullName: string;
+  geminiKey?: string;
 }
 
 interface SessionContextType {
@@ -35,10 +37,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     loadUser();
   }, []);
 
+  const router = useRouter();
+
   const signOut = async () => {
     try {
       await userStorage.deleteUser();
       setSession(null);
+      router.push('/login');
     } catch (error) {
       console.error('Error signing out:', error);
     }

@@ -15,6 +15,6 @@ export const handleAsync = async <T>(
   }
 };
 
-const showToast = (message: string, isError = false) => {
+export const showToast = (message: string, isError = false) => {
   ToastAndroid.showWithGravity(message, ToastAndroid.SHORT, ToastAndroid.CENTER);
 };

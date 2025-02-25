@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { LogOut, Trash2, Sparkles } from 'lucide-react-native';
 import { Container } from '~/components/Container';
 import MenuOption from '~/components/settings/MenuOption';
 import { router } from 'expo-router';
 import GeminiModal from '~/components/settings/GeminiModal';
+import { userStorage } from '~/utils/userStorage';
+import { showToast } from '~/utils/asyncHandler';
+import { useSession } from '~/lib/ctx';
 
 const Settings = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [apiKey, setApiKey] = useState('');
+  const { signOut } = useSession();
 
   function goToTrash() {
     router.push('/trash');
@@ -22,10 +26,21 @@ const Settings = () => {
     setModalVisible(false);
   }
 
-  function saveApiKey() {
-    console.log('API Key Saved:', apiKey);
+  async function saveApiKey() {
+    if (!apiKey) return showToast('Please enter a valid API key');
+    await userStorage.updateGeminiKey(apiKey);
     closeModal();
   }
+
+  useEffect(() => {
+    async function fetchGeminiKey() {
+      const geminiKey = await userStorage.getGeminiKey();
+      if (geminiKey) {
+        setApiKey(geminiKey);
+      }
+    }
+    fetchGeminiKey();
+  }, []);
 
   return (
     <Container>
@@ -37,7 +52,7 @@ const Settings = () => {
         <View className="mb-4 w-full">
           <MenuOption Icon={Sparkles} label="Gemini Api Key" handlePress={openModal} />
           <MenuOption Icon={Trash2} label="Trash Bin" handlePress={goToTrash} />
-          <MenuOption Icon={LogOut} label="Log Out" />
+          <MenuOption Icon={LogOut} label="Log Out" handlePress={signOut} />
         </View>
 
         <View className="mb-4 mt-auto">
