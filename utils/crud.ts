@@ -6,7 +6,8 @@ export const fetchNotes = () =>
     const { data, error } = await supabase
       .from('notes')
       .select('*')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .eq('is_deleted', false);
     if (error) console.error(error);
     return data;
   });
@@ -19,6 +20,7 @@ export const findNoteById = (id: string) => {
     return data;
   });
 };
+
 export const addNote = (note: NoteType) =>
   handleAsync(async () => {
     const { data, error } = await supabase.from('notes').insert([note]).select();
@@ -41,3 +43,12 @@ export const deleteNote = (id: string) =>
 
     return { success: true };
   }, 'Note deleted!');
+
+export const addNotesToBin = (ids: string[]) => {
+  return handleAsync(async () => {
+    const { data, error } = await supabase.from('notes').update({ is_deleted: true }).in('id', ids);
+    if (error) console.error(error);
+
+    return data;
+  }, 'Notes added to bin!');
+};

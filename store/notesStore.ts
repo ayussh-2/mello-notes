@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import { NoteType } from '~/types';
-import { fetchNotes, addNote, updateNote, findNoteById } from '~/utils/crud';
+import {
+  fetchNotes,
+  addNote,
+  updateNote,
+  findNoteById,
+  addNotesToBin as addToBin,
+} from '~/utils/crud';
 import { userStorage } from '~/utils/userStorage';
 
 interface NotesState {
@@ -18,6 +24,7 @@ interface NotesState {
   setCurrentNote: (note: NoteType | null) => void;
   setContentChanged: (changed: boolean) => void;
   setIsSaving: (saving: boolean) => void;
+  addNotesToBin: (ids: string[]) => Promise<void>;
 }
 
 export const useNotesStore = create<NotesState>((set, get) => ({
@@ -124,6 +131,17 @@ export const useNotesStore = create<NotesState>((set, get) => ({
       console.error('Error finding note:', error);
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  addNotesToBin: async (ids: string[]) => {
+    try {
+      await addToBin(ids);
+      set((state) => ({
+        notes: state.notes.filter((note) => !ids.includes(note.id!)),
+      }));
+    } catch (error) {
+      console.error('Error adding notes to bin:', error);
     }
   },
 
