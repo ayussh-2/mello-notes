@@ -16,6 +16,7 @@ import GeminiButton from '~/components/create-notes/GeminiButton';
 import { getEditorHTML } from '~/constants';
 import { addNote, findNoteById, updateNote } from '~/utils/crud';
 import { useLocalSearchParams } from 'expo-router';
+import { userStorage } from '~/utils/userStorage';
 
 const CreateNote = () => {
   const { id } = useLocalSearchParams();
@@ -76,10 +77,11 @@ const CreateNote = () => {
         setContentChanged(true);
       } else if (data.type === 'save') {
         if (existingNoteId === 'new') {
+          const user = await userStorage.getUser();
           const savedData = await addNote({
             title,
             content: data.content,
-            user_id: '2',
+            user_id: user?.id || 'anonymous',
           });
           if (savedData && savedData.length > 0) setExistingNoteId(savedData[0].id);
         } else {
