@@ -1,5 +1,6 @@
 import React from 'react';
-import { Modal, View, TouchableOpacity, Text } from 'react-native';
+import { Modal, View, Text } from 'react-native';
+import { Button } from '../ui/Button';
 
 interface ConfirmationModalProps {
   visible: boolean;
@@ -9,7 +10,6 @@ interface ConfirmationModalProps {
   message: string;
   confirmText?: string;
   cancelText?: string;
-  confirmColor?: string;
 }
 
 export default function ConfirmationModal({
@@ -20,7 +20,6 @@ export default function ConfirmationModal({
   message,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  confirmColor = 'text-red-500',
 }: ConfirmationModalProps) {
   return (
     <Modal visible={visible} transparent={true} animationType="fade" onRequestClose={onClose}>
@@ -29,12 +28,12 @@ export default function ConfirmationModal({
           <Text className="mb-4 font-nunito-bold text-lg">{title}</Text>
           <Text className="mb-6 font-nunito-regular">{message}</Text>
           <View className="flex-row justify-end">
-            <TouchableOpacity onPress={onClose} className="mr-4 p-2">
-              <Text className="font-nunito-bold text-gray-600">{cancelText}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={onConfirm} className="p-2">
-              <Text className={`font-nunito-bold ${confirmColor}`}>{confirmText}</Text>
-            </TouchableOpacity>
+            <Button onPress={onClose} className="mr-4 w-auto" variant="secondary">
+              {cancelText}
+            </Button>
+            <Button onPress={onConfirm} className={`w-auto bg-red-500 `}>
+              {confirmText}
+            </Button>
           </View>
         </View>
       </View>

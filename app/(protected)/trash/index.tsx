@@ -81,7 +81,6 @@ export default function Trash() {
           }
           confirmText="Delete"
           cancelText="Cancel"
-          confirmColor="text-red-500"
         />
       </ScrollView>
 

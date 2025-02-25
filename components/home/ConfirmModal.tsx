@@ -1,5 +1,6 @@
 import React from 'react';
 import { Modal, View, TouchableOpacity, Text } from 'react-native';
+import { Button } from '../ui/Button';
 
 export default function ConfirmModal({
   confirmDelete,
@@ -27,12 +28,15 @@ export default function ConfirmModal({
               : `Are you sure you want to move these ${selectedNotes.length} notes to bin?`}
           </Text>
           <View className="flex-row justify-end">
-            <TouchableOpacity onPress={() => setConfirmDelete(false)} className="mr-4 p-2">
-              <Text className="font-nunito-bold text-gray-600">Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={executeDelete} className="p-2">
-              <Text className="font-nunito-bold text-red-500">Move to Bin</Text>
-            </TouchableOpacity>
+            <Button
+              onPress={() => setConfirmDelete(false)}
+              className="mr-4 w-auto"
+              variant="secondary">
+              Cancel
+            </Button>
+            <Button onPress={executeDelete} className="w-auto bg-red-500 " variant="primary">
+              Move to Bin
+            </Button>
           </View>
         </View>
       </View>

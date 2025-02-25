@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
+import { Button } from '../ui/Button';
 
 interface SelectionBarProps {
   selectedNotes: string[];
@@ -9,9 +10,9 @@ interface SelectionBarProps {
 export default function SelectionBar({ selectedNotes, cancelSelection }: SelectionBarProps) {
   return (
     <View className="flex-row items-center">
-      <TouchableOpacity onPress={cancelSelection} className="mr-4">
-        <Text className="font-nunito-medium text-blue-500">Cancel</Text>
-      </TouchableOpacity>
+      <Button onPress={cancelSelection} className="mr-4 w-auto p-2" variant="secondary">
+        Cancel
+      </Button>
       <Text className="font-nunito-bold">{selectedNotes.length} Selected</Text>
     </View>
   );

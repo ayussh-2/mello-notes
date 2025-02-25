@@ -30,7 +30,7 @@ export default function NoteCard({
   return (
     <TouchableOpacity
       key={note.id}
-      className={`mt-2 w-[49%] rounded-[0.75rem] ${
+      className={`mt-2 w-full rounded-[0.75rem] ${
         selectedNotes.includes(note.id!) ? 'border-2 border-blue-400 bg-blue-100' : 'bg-[#FFFDFA]'
       } p-[1rem]`}
       onPress={() => handleNotePress(note.id!)}

@@ -1,9 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { View, TouchableOpacity, Text } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { Link } from 'expo-router';
 import React from 'react';
-import { Settings, User } from 'lucide-react-native';
+import { Settings } from 'lucide-react-native';
 
 interface NavbarProps {
   children?: React.ReactNode;
@@ -11,7 +11,6 @@ interface NavbarProps {
 }
 
 export default function Navbar({ children, rightElement }: NavbarProps) {
-  const navigation = useNavigation();
   const route = useRoute();
 
   const isHomeScreen = route.name === 'home/index';
@@ -40,7 +39,7 @@ export default function Navbar({ children, rightElement }: NavbarProps) {
         ) : (
           <>
             <Link href={'/home'} asChild>
-              <TouchableOpacity className="p-2" onPress={() => navigation.goBack()}>
+              <TouchableOpacity className="p-2">
                 <Ionicons name="arrow-back" size={24} color="#333" />
               </TouchableOpacity>
             </Link>
