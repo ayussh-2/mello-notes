@@ -7,7 +7,7 @@ import { FormContainer } from '~/components/form/FormContainer';
 import { Link, router } from 'expo-router';
 import { useState } from 'react';
 import { signIn } from '~/utils/auth';
-import { userStorage } from '~/utils/userStorage';
+import { useSession } from '~/lib/ctx';
 
 type LoginData = {
   email: string;
@@ -25,7 +25,7 @@ export default function Login() {
       password: '',
     },
   });
-
+  const { refreshSession } = useSession();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,18 +33,9 @@ export default function Login() {
     setLoading(true);
     setError(null);
     try {
-      const result = await signIn(data.email, data.password);
-      if (result && result.user) {
-        const { user } = result;
-        await userStorage.saveUser({
-          email: user.email!,
-          fullName: user.user_metadata.fullName,
-          id: user.id,
-        });
-        router.navigate('/home');
-      } else {
-        throw new Error('Login failed');
-      }
+      const authenticated = await signIn(data.email, data.password);
+      refreshSession();
+      if (authenticated) router.push('/home');
     } catch (error) {
       console.error('Login error:', error);
       setError(error instanceof Error ? error.message : 'An error occurred during login');
@@ -52,6 +43,8 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+ 
 
   return (
     <Container>
@@ -88,6 +81,7 @@ export default function Login() {
             control={control}
             name="password"
             label="Password"
+            secureTextEntry
             rules={{
               required: 'Password is required',
               minLength: {

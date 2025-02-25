@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { handleAsync } from './asyncHandler';
+import { userStorage } from './userStorage';
 
 interface SignUpData {
   email: string;
@@ -28,12 +29,20 @@ export const signUp = ({ email, password, fullName }: SignUpData) =>
 export const signIn = (email: string, password: string) =>
   handleAsync(async () => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const user = data?.user;
+    if (!user) throw new Error('User not found');
+    await userStorage.saveUser({
+      email: user.email!,
+      fullName: user.user_metadata.fullName,
+      id: user.id,
+    });
     if (error) throw error;
-    return data;
+    return true;
   }, 'Logged in successfully!');
 
-export const signOut = () =>
-  handleAsync(async () => {
-    const { error } = await supabase.auth.signOut();
-    return { success: true };
-  }, 'Logged out successfully!');
+// export const resetPassword = (email: string) =>
+//   handleAsync(async () => {
+//     const { error } = await supabase.auth.resetPasswordForEmail(email);
+//     if (error) throw error;
+//     return { success: true };
+//   }, 'Password reset email sent!');

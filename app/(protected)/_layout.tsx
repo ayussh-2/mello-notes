@@ -4,7 +4,6 @@ import { useSession } from '~/lib/ctx';
 
 export default function AppLayout() {
   const { session, isLoading } = useSession();
-
   if (isLoading) {
     return <Text>Loading...</Text>;
   }

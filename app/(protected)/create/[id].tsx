@@ -91,7 +91,7 @@ const CreateNote = () => {
 
   useEffect(() => {
     if (aiError) {
-      Alert.alert('Error', `Failed to generate content: ${aiError}`);
+      Alert.alert('Heads up!', `Failed to generate content: ${aiError}`);
     }
   }, [aiError]);
 

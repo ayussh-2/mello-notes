@@ -13,6 +13,7 @@ interface SessionContextType {
   session: User | null;
   isLoading: boolean;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -25,6 +26,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     async function loadUser() {
       try {
         const user = await userStorage.getUser();
+        console.log('user', user);
         setSession(user);
       } catch (error) {
         console.error('Error loading user session:', error);
@@ -49,8 +51,22 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const refreshSession = async () => {
+    try {
+      setIsLoading(true);
+      const user = await userStorage.getUser();
+      console.log('refreshed user', user);
+      setSession(user);
+    } catch (error) {
+      console.error('Error refreshing user session:', error);
+      setSession(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <SessionContext.Provider value={{ session, isLoading, signOut }}>
+    <SessionContext.Provider value={{ session, isLoading, signOut, refreshSession }}>
       {children}
     </SessionContext.Provider>
   );

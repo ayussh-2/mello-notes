@@ -3,7 +3,7 @@ import { View, Text } from 'react-native';
 import { LogOut, Trash2, Sparkles } from 'lucide-react-native';
 import { Container } from '~/components/Container';
 import MenuOption from '~/components/settings/MenuOption';
-import { router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import GeminiModal from '~/components/settings/GeminiModal';
 import { userStorage } from '~/utils/userStorage';
 import { showToast } from '~/utils/asyncHandler';
@@ -56,9 +56,11 @@ const Settings = () => {
         </View>
 
         <View className="mb-4 mt-auto">
-          <Text className="text-center font-nunito-extra-bold text-sm text-gray-500">
-            Made with ❤️ by Ayush
-          </Text>
+          <Link href={'https://github.com/ayussh-2'} target="_blank">
+            <Text className="text-center font-nunito-extra-bold text-sm text-gray-500">
+              Made with ❤️ by Ayush
+            </Text>
+          </Link>
         </View>
       </View>
 
