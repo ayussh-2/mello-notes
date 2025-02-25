@@ -109,8 +109,8 @@ export const useNotesStore = create<NotesState>((set, get) => ({
     if (id === 'new') {
       set({
         currentNote: {
-          title: 'Start with a catchy title...',
-          content: 'Write Something Amazing...',
+          title: '',
+          content: '',
           user_id: 'anonymous',
         },
         lastSaved: null,
@@ -126,6 +126,8 @@ export const useNotesStore = create<NotesState>((set, get) => ({
           currentNote: note,
           lastSaved: new Date(note.updated_at || note.created_at),
         });
+
+        return note.id;
       }
     } catch (error) {
       console.error('Error finding note:', error);

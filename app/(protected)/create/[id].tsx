@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   View,
   TextInput,
@@ -7,6 +7,7 @@ import {
   Platform,
   NativeSyntheticEvent,
   Text,
+  Alert,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Container } from '~/components/Container';
@@ -16,15 +17,23 @@ import GeminiButton from '~/components/create-notes/GeminiButton';
 import { getEditorHTML } from '~/constants';
 import { useLocalSearchParams } from 'expo-router';
 import { useNotesStore } from '~/store/notesStore';
+import { useGeminiAI } from '~/hooks/useGeminiAi';
 
 const CreateNote = () => {
   const { id } = useLocalSearchParams();
   const noteId = Array.isArray(id) ? id[0] : id;
+  const [editorReady, setEditorReady] = useState(false);
+
+  const {
+    generateCompletion,
+    isLoading: aiLoading,
+    error: aiError,
+    displayedResponse,
+  } = useGeminiAI();
 
   const {
     currentNote,
     isLoading,
-    isSaving,
     lastSaved,
     contentChanged,
     getNoteById,
@@ -37,11 +46,51 @@ const CreateNote = () => {
   const webViewRef = useRef<WebView | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
   const AUTO_SAVE_INTERVAL = 30000;
-
-  const title = currentNote?.title || 'Start with a catchy title...';
+  const title = currentNote?.title || '';
   const content = currentNote?.content || 'Write Something Amazing...';
-
+  const [existingNoteId, setExistingNoteId] = useState<string | null>(null);
   const [showFormatting, setShowFormatting] = React.useState<boolean>(false);
+
+  useEffect(() => {
+    if (displayedResponse && webViewRef.current && editorReady) {
+      const escapedText = displayedResponse
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '\\"')
+        .replace(/\n/g, '\\n');
+
+      webViewRef.current.injectJavaScript(`
+        (function() {
+          try {
+            const editor = document.getElementById('editor');
+            if (!editor.innerHTML.includes("ai-generated-content")) {
+              editor.innerHTML += '<div class="ai-generated-content"></div>';
+            }
+            
+            const aiContent = document.querySelector('.ai-generated-content');
+            aiContent.innerHTML = "${escapedText}";
+            
+            editor.scrollTop = editor.scrollHeight;
+            
+            window.ReactNativeWebView.postMessage(
+              JSON.stringify({ type: 'contentChanged' })
+            );
+          } catch (err) {
+            window.ReactNativeWebView.postMessage(
+              JSON.stringify({ type: 'error', message: err.toString() })
+            );
+          }
+          return true;
+        })();
+      `);
+    }
+  }, [displayedResponse, editorReady]);
+
+  useEffect(() => {
+    if (aiError) {
+      Alert.alert('Error', `Failed to generate content: ${aiError}`);
+    }
+  }, [aiError]);
 
   const executeCommand = (command: string): void => {
     const script = `document.execCommand('${command}', false, null); true;`;
@@ -80,6 +129,11 @@ const CreateNote = () => {
         );
       });
       
+      // Let React Native know the editor is ready
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: 'editorReady' })
+      );
+      
       true;
     `);
   };
@@ -89,22 +143,24 @@ const CreateNote = () => {
     try {
       data = JSON.parse(event.nativeEvent.data);
 
-      if (data.type === 'fontsLoaded') {
+      if (data.type === 'fontsLoaded' || data.type === 'editorReady') {
         setupContentChangeDetection();
+        setEditorReady(true);
       } else if (data.type === 'contentChanged') {
         setContentChanged(true);
       } else if (data.type === 'save') {
-        if (noteId === 'new') {
+        if (existingNoteId === 'new') {
           if (currentNote) {
-            await createNote({
+            const savedNoteId = await createNote({
               title: currentNote.title,
               content: data.content,
               user_id: currentNote.user_id || 'anonymous',
             });
+            if (savedNoteId) setExistingNoteId(savedNoteId);
           }
-        } else if (noteId && currentNote) {
-          await updateNote(noteId, {
-            title: currentNote.title,
+        } else if (existingNoteId) {
+          await updateNote(existingNoteId!, {
+            title: currentNote?.title,
             content: data.content,
           });
         }
@@ -112,6 +168,10 @@ const CreateNote = () => {
         if (!data.autoSave) {
           setIsSaving(false);
         }
+      } else if (data.type === 'getCurrentContent') {
+        generateCompletion(title, data.content);
+      } else if (data.type === 'error') {
+        console.error('WebView error:', data.message);
       }
     } catch (error) {
       console.error('Error processing WebView message:', error);
@@ -127,8 +187,34 @@ const CreateNote = () => {
     }, 500);
   };
 
+  const handleAutoComplete = async () => {
+    if (currentNote) {
+      handleSave(true);
+    }
+
+    if (!webViewRef.current || !editorReady) {
+      Alert.alert('Error', 'Editor not ready. Please try again.');
+      return;
+    }
+
+    webViewRef.current.injectJavaScript(`
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ 
+          type: 'getCurrentContent', 
+          content: document.getElementById('editor').innerHTML 
+        })
+      );
+      true;
+    `);
+  };
+
   useEffect(() => {
-    getNoteById(noteId || 'new');
+    async function getNote() {
+      const newId = (await getNoteById(noteId || 'new')) ?? 'new';
+      console.log('newId', newId);
+      setExistingNoteId(newId);
+    }
+    getNote();
   }, [noteId, getNoteById]);
 
   useEffect(() => {
@@ -179,7 +265,7 @@ const CreateNote = () => {
               className="p-0 font-nunito-extra-bold text-2xl text-gray-800"
               value={title}
               onChangeText={handleTitleChange}
-              placeholder="Title"
+              placeholder="Start with a catchy title..."
               placeholderTextColor="#9ca3af"
             />
           )}
@@ -204,7 +290,7 @@ const CreateNote = () => {
           />
         )}
         <View className="absolute bottom-5 right-5 items-end">
-          <GeminiButton isLoading={isSaving} handleAutoComplete={handleSave} />
+          <GeminiButton isLoading={aiLoading} handleAutoComplete={handleAutoComplete} />
           <FormattingButtons
             executeCommand={executeCommand}
             setShowFormatting={setShowFormatting}
