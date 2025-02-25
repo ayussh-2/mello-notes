@@ -28,6 +28,7 @@ const CreateNote = () => {
   const [contentChanged, setContentChanged] = useState<boolean>(false);
   const webViewRef = useRef<WebView | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [existingNoteId, setExistingNoteId] = useState<string | null>(null);
 
   const AUTO_SAVE_INTERVAL = 30000;
 
@@ -74,16 +75,15 @@ const CreateNote = () => {
       } else if (data.type === 'contentChanged') {
         setContentChanged(true);
       } else if (data.type === 'save') {
-        const noteId = Array.isArray(id) ? id[0] : id;
-
-        if (noteId === 'new') {
-          await addNote({
+        if (existingNoteId === 'new') {
+          const savedData = await addNote({
             title,
             content: data.content,
             user_id: '2',
           });
+          if (savedData && savedData.length > 0) setExistingNoteId(savedData[0].id);
         } else {
-          await updateNote(noteId, {
+          await updateNote(existingNoteId!, {
             title,
             content: data.content,
           });
@@ -117,9 +117,10 @@ const CreateNote = () => {
   };
 
   const findNote = async () => {
-    if (!id || id === 'new') return;
-    setIsLoading(true);
     const noteId = Array.isArray(id) ? id[0] : id;
+    setExistingNoteId(noteId);
+    if (!noteId || noteId === 'new') return;
+    setIsLoading(true);
     const note = await findNoteById(noteId);
     if (note) {
       setTitle(note.title);

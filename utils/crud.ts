@@ -3,14 +3,14 @@ import { handleAsync } from '../utils/asyncHandler';
 import { NoteType } from '~/types';
 export const fetchNotes = () =>
   handleAsync(async () => {
-    let { data, error } = await supabase.from('notes').select('*');
+    const { data, error } = await supabase.from('notes').select('*');
     if (error) console.error(error);
     return data;
   });
 
 export const findNoteById = (id: string) => {
   return handleAsync(async () => {
-    let { data, error } = await supabase.from('notes').select('*').eq('id', id).single();
+    const { data, error } = await supabase.from('notes').select('*').eq('id', id).single();
     if (error) console.error(error);
 
     return data;
@@ -18,14 +18,14 @@ export const findNoteById = (id: string) => {
 };
 export const addNote = (note: NoteType) =>
   handleAsync(async () => {
-    let { data, error } = await supabase.from('notes').insert([note]);
+    const { data, error } = await supabase.from('notes').insert([note]).select();
     if (error) console.error(error);
     return data;
   }, 'Note added!');
 
 export const updateNote = (id: string, updates: any) =>
   handleAsync(async () => {
-    let { data, error } = await supabase.from('notes').update(updates).eq('id', id);
+    const { data, error } = await supabase.from('notes').update(updates).eq('id', id);
     if (error) console.error(error);
 
     return data;
@@ -33,7 +33,7 @@ export const updateNote = (id: string, updates: any) =>
 
 export const deleteNote = (id: string) =>
   handleAsync(async () => {
-    let { error } = await supabase.from('notes').delete().eq('id', id);
+    const { error } = await supabase.from('notes').delete().eq('id', id);
     if (error) console.error(error);
 
     return { success: true };
