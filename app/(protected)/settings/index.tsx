@@ -1,9 +1,32 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-import { LogOut, Trash2, ChevronRight, Sparkles } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { View, Text } from 'react-native';
+import { LogOut, Trash2, Sparkles } from 'lucide-react-native';
 import { Container } from '~/components/Container';
+import MenuOption from '~/components/settings/MenuOption';
+import { router } from 'expo-router';
+import GeminiModal from '~/components/settings/GeminiModal';
 
 const Settings = () => {
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+
+  function goToTrash() {
+    router.push('/trash');
+  }
+
+  function openModal() {
+    setModalVisible(true);
+  }
+
+  function closeModal() {
+    setModalVisible(false);
+  }
+
+  function saveApiKey() {
+    console.log('API Key Saved:', apiKey);
+    closeModal();
+  }
+
   return (
     <Container>
       <View className="w-full flex-1 p-6">
@@ -12,8 +35,8 @@ const Settings = () => {
         </View>
 
         <View className="mb-4 w-full">
-          <MenuOption Icon={Sparkles} label="Gemini Api Key" />
-          <MenuOption Icon={Trash2} label="Trash Bin" />
+          <MenuOption Icon={Sparkles} label="Gemini Api Key" handlePress={openModal} />
+          <MenuOption Icon={Trash2} label="Trash Bin" handlePress={goToTrash} />
           <MenuOption Icon={LogOut} label="Log Out" />
         </View>
 
@@ -23,19 +46,15 @@ const Settings = () => {
           </Text>
         </View>
       </View>
-    </Container>
-  );
-};
 
-const MenuOption = ({ Icon, label }: { Icon: any; label: string }) => {
-  return (
-    <TouchableOpacity className={`flex-row items-center p-4 `}>
-      <View className="mr-3 h-12 w-12 items-center justify-center rounded-xl bg-[#FFFDFA]">
-        <Icon size={20} color="#DC2626" />
-      </View>
-      <Text className="flex-1 font-nunito-regular text-lg text-[#595555]">{label}</Text>
-      <ChevronRight size={16} color="#9CA3AF" />
-    </TouchableOpacity>
+      <GeminiModal
+        isModalVisible={isModalVisible}
+        closeModal={closeModal}
+        apiKey={apiKey}
+        setApiKey={setApiKey}
+        saveApiKey={saveApiKey}
+      />
+    </Container>
   );
 };
 

@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { handleAsync } from '../utils/asyncHandler';
 import { NoteType } from '~/types';
+
 export const fetchNotes = () =>
   handleAsync(async () => {
     const { data, error } = await supabase
@@ -51,4 +52,38 @@ export const addNotesToBin = (ids: string[]) => {
 
     return data;
   }, 'Notes added to bin!');
+};
+
+export const fetchNotesFromBin = (user_id: string) => {
+  return handleAsync(async () => {
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .eq('is_deleted', true)
+      .eq('user_id', user_id);
+    if (error) console.error(error);
+
+    return data;
+  });
+};
+
+export const restoreNotes = (ids: string[]) => {
+  return handleAsync(async () => {
+    const { data, error } = await supabase
+      .from('notes')
+      .update({ is_deleted: false })
+      .in('id', ids);
+    if (error) console.error(error);
+
+    return data;
+  }, 'Notes restored!');
+};
+
+export const deleteNotes = (ids: string[]) => {
+  return handleAsync(async () => {
+    const { data, error } = await supabase.from('notes').delete().in('id', ids);
+    if (error) console.error(error);
+
+    return data;
+  }, 'Notes deleted!');
 };

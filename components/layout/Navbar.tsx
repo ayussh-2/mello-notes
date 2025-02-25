@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Link } from 'expo-router';
 import React from 'react';
-import { User } from 'lucide-react-native';
+import { Settings, User } from 'lucide-react-native';
 
 interface NavbarProps {
   children?: React.ReactNode;
@@ -23,7 +23,7 @@ export default function Navbar({ children, rightElement }: NavbarProps) {
           <>
             <Link href={'/settings'} asChild>
               <TouchableOpacity className="p-2">
-                <User size={24} color="#333" />
+                <Settings size={24} color="#333" />
               </TouchableOpacity>
             </Link>
 
