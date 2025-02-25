@@ -23,6 +23,7 @@ const CreateNote = () => {
   const { id } = useLocalSearchParams();
   const noteId = Array.isArray(id) ? id[0] : id;
   const [editorReady, setEditorReady] = useState(false);
+  const [userIsTyping, setUserIsTyping] = useState(false);
 
   const {
     generateCompletion,
@@ -45,7 +46,9 @@ const CreateNote = () => {
 
   const webViewRef = useRef<WebView | null>(null);
   const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const AUTO_SAVE_INTERVAL = 30000;
+  const TYPING_TIMEOUT = 2000;
   const title = currentNote?.title || '';
   const content = currentNote?.content || 'Write Something Amazing...';
   const [existingNoteId, setExistingNoteId] = useState<string | null>(null);
@@ -103,10 +106,24 @@ const CreateNote = () => {
         currentNote: { ...currentNote, title: newTitle },
         contentChanged: true,
       });
+
+      setUserIsTyping(true);
+
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+
+      typingTimeoutRef.current = setTimeout(() => {
+        setUserIsTyping(false);
+      }, TYPING_TIMEOUT);
     }
   };
 
   const handleSave = async (autoSave: boolean = false): Promise<void> => {
+    if (autoSave && userIsTyping) {
+      return;
+    }
+
     if (!autoSave) {
       setIsSaving(true);
     }
@@ -125,7 +142,7 @@ const CreateNote = () => {
       
       editor.addEventListener('input', function() {
         window.ReactNativeWebView.postMessage(
-          JSON.stringify({ type: 'contentChanged' })
+          JSON.stringify({ type: 'contentChanged', isTyping: true })
         );
       });
       
@@ -148,6 +165,18 @@ const CreateNote = () => {
         setEditorReady(true);
       } else if (data.type === 'contentChanged') {
         setContentChanged(true);
+
+        if (data.isTyping) {
+          setUserIsTyping(true);
+
+          if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+          }
+
+          typingTimeoutRef.current = setTimeout(() => {
+            setUserIsTyping(false);
+          }, TYPING_TIMEOUT);
+        }
       } else if (data.type === 'save') {
         if (existingNoteId === 'new') {
           if (currentNote) {
@@ -211,7 +240,6 @@ const CreateNote = () => {
   useEffect(() => {
     async function getNote() {
       const newId = (await getNoteById(noteId || 'new')) ?? 'new';
-      console.log('newId', newId);
       setExistingNoteId(newId);
     }
     getNote();
@@ -219,7 +247,7 @@ const CreateNote = () => {
 
   useEffect(() => {
     autoSaveTimerRef.current = setInterval(() => {
-      if (contentChanged) {
+      if (contentChanged && !userIsTyping) {
         handleSave(true);
       }
     }, AUTO_SAVE_INTERVAL);
@@ -229,16 +257,54 @@ const CreateNote = () => {
         clearInterval(autoSaveTimerRef.current);
       }
     };
-  }, [contentChanged]);
+  }, [contentChanged, userIsTyping]);
 
   useEffect(() => {
-    if (contentChanged) {
+    if (contentChanged && !userIsTyping) {
       const debounceTimer = setTimeout(() => {
         handleSave(true);
       }, 5000);
       return () => clearTimeout(debounceTimer);
     }
-  }, [title, contentChanged]);
+  }, [title, contentChanged, userIsTyping]);
+
+  useEffect(() => {
+    if (webViewRef.current && editorReady) {
+      webViewRef.current.injectJavaScript(`
+        // Keep track of selection and focus when changes occur
+        const editor = document.getElementById('editor');
+        let savedSelection = null;
+        
+        function saveSelection() {
+          const sel = window.getSelection();
+          if (sel.rangeCount > 0) {
+            savedSelection = sel.getRangeAt(0).cloneRange();
+          }
+        }
+        
+        function restoreSelection() {
+          if (savedSelection) {
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(savedSelection);
+            editor.focus();
+          }
+        }
+        
+        // Save selection before any state changes
+        editor.addEventListener('blur', saveSelection);
+        
+        // Override the default focus behavior
+        const originalFocus = editor.focus;
+        editor.focus = function() {
+          originalFocus.apply(this);
+          restoreSelection();
+        };
+        
+        true;
+      `);
+    }
+  }, [editorReady]);
 
   return (
     <Container>
