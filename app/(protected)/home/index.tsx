@@ -5,16 +5,17 @@ import Navbar from '~/components/layout/Navbar';
 import CreateButton from '~/components/home/CreateButton';
 import { fetchNotes } from '~/utils/crud';
 import { NoteType } from '~/types';
+// @ts-ignore
 import HTMLView from 'react-native-htmlview';
+import { router } from 'expo-router';
 
-export default function NotesScreen() {
+export default function Home() {
   const [notes, setNotes] = useState<NoteType[]>([]);
 
   async function fetchAllNotes() {
     try {
       const allNotes = await fetchNotes();
       if (allNotes) setNotes(allNotes);
-      console.log(allNotes);
     } catch (error) {
       console.error('Error fetching notes:', error);
     }
@@ -34,6 +35,10 @@ export default function NotesScreen() {
     );
   };
 
+  function handleOpenNote(id: string) {
+    router.push(`/create/${id}`);
+  }
+
   return (
     <Container>
       <Navbar>Notes</Navbar>
@@ -42,7 +47,9 @@ export default function NotesScreen() {
           {notes.map((note) => (
             <TouchableOpacity
               key={note.id}
-              className="mt-2 w-[49%] rounded-[0.75rem] bg-[#FFFDFA] p-[1rem]">
+              className="mt-2 w-[49%] rounded-[0.75rem] bg-[#FFFDFA] p-[1rem]"
+              onPress={() => handleOpenNote(note.id!)}
+              activeOpacity={0.7}>
               <Text className="mb-2 truncate font-nunito-extra-bold text-lg font-semibold leading-tight text-text-primary">
                 {note.title}
               </Text>

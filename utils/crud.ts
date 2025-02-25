@@ -8,6 +8,14 @@ export const fetchNotes = () =>
     return data;
   });
 
+export const findNoteById = (id: string) => {
+  return handleAsync(async () => {
+    let { data, error } = await supabase.from('notes').select('*').eq('id', id).single();
+    if (error) console.error(error);
+
+    return data;
+  });
+};
 export const addNote = (note: NoteType) =>
   handleAsync(async () => {
     let { data, error } = await supabase.from('notes').insert([note]);

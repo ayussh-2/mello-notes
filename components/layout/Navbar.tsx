@@ -2,16 +2,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Link } from 'expo-router';
+import React from 'react';
 
 interface NavbarProps {
-  children: string;
+  children?: React.ReactNode;
+  rightElement?: React.ReactNode;
 }
 
-export default function Navbar({ children }: NavbarProps) {
+export default function Navbar({ children, rightElement }: NavbarProps) {
   const navigation = useNavigation();
   const route = useRoute();
 
   const isHomeScreen = route.name === 'home/index';
+
   return (
     <View className="w-full px-5 pt-5">
       <View className="mb-5 flex-row items-center justify-between">
@@ -20,12 +23,22 @@ export default function Navbar({ children }: NavbarProps) {
             <TouchableOpacity className="p-2">
               <Ionicons name="menu" size={24} color="#333" />
             </TouchableOpacity>
-            <Text className="font-nunito-extra-bold text-xl font-semibold text-text-primary">
-              {children}
-            </Text>
-            <TouchableOpacity className="p-2">
-              <Ionicons name="search" size={24} color="#333" />
-            </TouchableOpacity>
+
+            {typeof children === 'string' ? (
+              <Text className="font-nunito-extra-bold text-xl font-semibold text-text-primary">
+                {children}
+              </Text>
+            ) : (
+              children
+            )}
+
+            {rightElement ? (
+              rightElement
+            ) : (
+              <TouchableOpacity className="p-2">
+                <Ionicons name="search" size={24} color="#333" />
+              </TouchableOpacity>
+            )}
           </>
         ) : (
           <>
@@ -34,10 +47,16 @@ export default function Navbar({ children }: NavbarProps) {
                 <Ionicons name="arrow-back" size={24} color="#333" />
               </TouchableOpacity>
             </Link>
-            <Text className="flex-1 text-center font-nunito-extra-bold text-xl font-semibold text-text-primary">
-              {children}
-            </Text>
-            <View style={{ width: 32 }} />
+
+            {typeof children === 'string' ? (
+              <Text className="flex-1 text-center font-nunito-extra-bold text-xl font-semibold text-text-primary">
+                {children}
+              </Text>
+            ) : (
+              <View className="flex-1">{children}</View>
+            )}
+
+            {rightElement ? rightElement : <View style={{ width: 32 }} />}
           </>
         )}
       </View>
