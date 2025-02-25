@@ -3,6 +3,7 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Link } from 'expo-router';
 import React from 'react';
+import { User } from 'lucide-react-native';
 
 interface NavbarProps {
   children?: React.ReactNode;
@@ -20,17 +21,13 @@ export default function Navbar({ children, rightElement }: NavbarProps) {
       <View className="mb-5 flex-row items-center justify-between">
         {isHomeScreen ? (
           <>
-            <TouchableOpacity className="p-2">
-              <Ionicons name="menu" size={24} color="#333" />
-            </TouchableOpacity>
+            <Link href={'/settings'} asChild>
+              <TouchableOpacity className="p-2">
+                <User size={24} color="#333" />
+              </TouchableOpacity>
+            </Link>
 
-            {typeof children === 'string' ? (
-              <Text className="font-nunito-extra-bold text-xl font-semibold text-text-primary">
-                {children}
-              </Text>
-            ) : (
-              children
-            )}
+            {children}
 
             {rightElement ? (
               rightElement

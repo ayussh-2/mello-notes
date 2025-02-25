@@ -79,7 +79,9 @@ export default function Home() {
         {selectionMode ? (
           <SelectionBar selectedNotes={selectedNotes} cancelSelection={cancelSelection} />
         ) : (
-          <Text>Notes</Text>
+          <Text className="font-nunito-extra-bold text-xl font-semibold text-text-primary">
+            Notes
+          </Text>
         )}
       </Navbar>
 
@@ -92,7 +94,7 @@ export default function Home() {
           <View className="flex-row flex-wrap justify-between px-5">
             {notes.length === 0 ? (
               <View className="mt-10 w-full items-center">
-                <Text className="font-nunito-medium text-lg text-text-secondary">
+                <Text className="font-nunito-regular text-xl text-text-secondary">
                   No notes yet. Create your first note!
                 </Text>
               </View>
