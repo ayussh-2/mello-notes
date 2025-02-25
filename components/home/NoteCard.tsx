@@ -1,8 +1,9 @@
 import React from 'react';
-import { TouchableOpacity, Text } from 'react-native';
+import { TouchableOpacity, Text, View } from 'react-native';
 import { NoteType } from '~/types';
 // @ts-ignore
 import HTMLView from 'react-native-htmlview';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface NoteCardProps {
   note: NoteType;
@@ -27,12 +28,16 @@ export default function NoteCard({
     );
   };
 
+  console.log(note.title, hasHtml(note.content));
+
   return (
     <TouchableOpacity
       key={note.id}
       className={`mt-2 w-full rounded-[0.75rem] ${
-        selectedNotes.includes(note.id!) ? 'border-2 border-blue-400 bg-blue-100' : 'bg-[#FFFDFA]'
-      } p-[1rem]`}
+        selectedNotes.includes(note.id!)
+          ? 'border-2 border-primary-500 bg-primary-100'
+          : 'bg-[#FFFDFA]'
+      }  p-[1rem]`}
       onPress={() => handleNotePress(note.id!)}
       onLongPress={() => handleNoteLongPress(note.id!)}
       delayLongPress={300}
@@ -40,38 +45,21 @@ export default function NoteCard({
       <Text className="mb-2 truncate font-nunito-extra-bold text-lg font-semibold leading-tight text-text-primary">
         {note.title}
       </Text>
-      {hasHtml(note.content) ? (
-        <HTMLView
-          value={note.content}
-          stylesheet={{
-            p: {
-              fontFamily: 'Nunito-Regular',
-              fontSize: 14,
-              lineHeight: 20,
-              color: '#6B7280',
-            },
-            ul: {
-              marginLeft: 0,
-              paddingLeft: 15,
-            },
-            li: {
-              fontFamily: 'Nunito-Regular',
-              fontSize: 14,
-              lineHeight: 20,
-              color: '#6B7280',
-            },
-            i: {
-              fontStyle: 'italic',
-            },
+
+      <View className="relative max-h-[10rem] overflow-hidden">
+        <HTMLView value={note.content} />
+
+        <LinearGradient
+          colors={['transparent', 'rgba(255, 253, 250, 0.9)', 'rgba(255, 253, 250, 1)']}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 10,
           }}
         />
-      ) : (
-        <Text
-          className="font-nunito-regular text-sm leading-5 text-text-secondary"
-          numberOfLines={3}>
-          {note.content}
-        </Text>
-      )}
+      </View>
     </TouchableOpacity>
   );
 }

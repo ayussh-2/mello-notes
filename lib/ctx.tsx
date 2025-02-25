@@ -26,7 +26,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     async function loadUser() {
       try {
         const user = await userStorage.getUser();
-        console.log('user', user);
         setSession(user);
       } catch (error) {
         console.error('Error loading user session:', error);
@@ -55,7 +54,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     try {
       setIsLoading(true);
       const user = await userStorage.getUser();
-      console.log('refreshed user', user);
       setSession(user);
     } catch (error) {
       console.error('Error refreshing user session:', error);
