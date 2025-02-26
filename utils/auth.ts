@@ -20,7 +20,6 @@ export const signUp = ({ email, password, fullName }: SignUpData) =>
       },
     });
 
-    console.log(authData);
     if (signUpError) throw signUpError;
 
     return authData;

@@ -28,8 +28,6 @@ export default function NoteCard({
     );
   };
 
-  console.log(note.title, hasHtml(note.content));
-
   return (
     <TouchableOpacity
       key={note.id}
