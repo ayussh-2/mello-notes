@@ -28,13 +28,7 @@ export default function Navbar({ children, rightElement }: NavbarProps) {
 
             {children}
 
-            {rightElement ? (
-              rightElement
-            ) : (
-              <TouchableOpacity className="p-2">
-                <Ionicons name="search" size={24} color="#333" />
-              </TouchableOpacity>
-            )}
+            {rightElement}
           </>
         ) : (
           <>
