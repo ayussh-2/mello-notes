@@ -38,6 +38,14 @@
         "backgroundColor": "#f8eee2"
       },
       "package": "com.anonymous.mellonotes"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "1de03856-94b2-4d79-bcc7-ef32e288665f"
+      }
     }
   }
 }
